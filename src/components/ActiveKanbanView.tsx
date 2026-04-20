@@ -75,9 +75,18 @@ export function ActiveKanbanView({ tickets, activeTicketId, mechanics, settings 
 
     return { 
       name: resolvedName, 
-      photo: featuredMechanic?.photo || null 
+      photo: featuredMechanic?.photo || getLocalPhoto(resolvedName)
     };
   };
+
+  function getLocalPhoto(name: string) {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('alexander')) return '/mechanics/alexander.png';
+    if (lowerName.includes('felipe')) return '/mechanics/felipe.png';
+    // Fallback for the third person, check if name matches "diego" or is similar
+    if (lowerName.includes('diego') || lowerName.includes('juan')) return '/mechanics/diego.png';
+    return null;
+  }
 
   return (
     <div className="w-full h-full bg-[#0A0A0A] p-10 flex flex-col font-sans">
