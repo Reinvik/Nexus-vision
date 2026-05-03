@@ -24,9 +24,9 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
   // Configuration (Could be moved to a settings file/db later)
   const voiceSettings = {
     enabled: true,
-    statusWhitelist: ['reparado', 'listo_entrega'], // Expanded whitelist
-    pitch: 1.0,
-    rate: 0.85, // Slightly slower for better clarity
+    statusWhitelist: ['Listo para entrega'], // Matches TicketStatus exactly
+    pitch: 1.1, // Slightly higher pitch for female voice preference
+    rate: 0.9, 
   };
 
   const announceTicket = useCallback((ticket: Ticket) => {
@@ -42,20 +42,31 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
       // Spell out the plate letter by letter for clarity
       const cleanPlate = ticket.patente?.toUpperCase().split('').join(' ') || 'desconocida';
       
-      // Custom announcement for Roma Center
+      // Phrasing as requested: License plate + "está listo para entrega"
       message.text = `Atención. El vehículo con patente ${cleanPlate}, está listo para entrega. Repito, patente ${cleanPlate}, listo para entrega.`;
       message.lang = 'es-CL';
       message.pitch = voiceSettings.pitch;
       message.rate = voiceSettings.rate;
       message.volume = 1;
 
-      // Use a professional voice if available
+      // Use a female voice if available
       const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(v => v.lang.includes('es') && v.name.includes('Google')) || 
-                             voices.find(v => v.lang.includes('es-CL')) ||
-                             voices.find(v => v.lang.includes('es'));
       
-      if (preferredVoice) message.voice = preferredVoice;
+      // Female voices commonly found in OS: Helena, Sabina (Windows), Monica, Paulina (Mac), Lucia (Google)
+      const femaleKeywords = ['helena', 'sabina', 'monica', 'paulina', 'lucia', 'elena', 'laura', 'female', 'mujer'];
+      
+      const preferredVoice = voices.find(v => 
+        v.lang.includes('es') && 
+        femaleKeywords.some(kw => v.name.toLowerCase().includes(kw))
+      ) || 
+      voices.find(v => v.lang.includes('es') && v.name.includes('Google')) || 
+      voices.find(v => v.lang.includes('es-CL')) ||
+      voices.find(v => v.lang.includes('es'));
+      
+      if (preferredVoice) {
+        console.log('[Audio] Usando voz:', preferredVoice.name);
+        message.voice = preferredVoice;
+      }
 
       window.speechSynthesis.speak(message);
     } catch (error) {
@@ -66,9 +77,9 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
   const testAudio = () => {
     const testTicket: Ticket = {
       id: 'test',
-      patente: 'TEST 12',
-      status: 'listo_entrega',
-      customer_name: 'Usuario de Prueba'
+      patente: 'ABCD 12',
+      status: 'Listo para entrega',
+      owner_name: 'Usuario de Prueba'
     } as Ticket;
     announceTicket(testTicket);
   };
