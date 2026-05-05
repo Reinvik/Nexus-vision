@@ -134,12 +134,12 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
                  <img src={m.photo} className="w-full h-full object-cover" alt={m.name} />
                </motion.button>
              ))}
+            </div>
+            <div className="space-y-1">
+              <p className="text-white text-xl font-black uppercase tracking-tighter">Equipo de</p>
+              <p className="text-[#FFB800] text-sm font-bold uppercase tracking-[0.3em]">Roma Center</p>
+            </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-white text-xl font-black uppercase tracking-tighter">Equipo de Expertos</p>
-            <p className="text-[#FFB800] text-sm font-bold uppercase tracking-[0.3em]">Roma Center</p>
-          </div>
-        </div>
       </div>
 
       {/* MECHANIC LAMINA (OVERLAY) */}

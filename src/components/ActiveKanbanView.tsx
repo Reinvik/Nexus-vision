@@ -117,8 +117,8 @@ export function ActiveKanbanView({ tickets, activeTicketId, mechanics, settings 
               ))}
             </div>
             <div className="hidden xl:block">
-              <p className="text-white text-sm font-black uppercase tracking-tighter">Equipo Roma Center</p>
-              <p className="text-[#FFB800] text-[10px] font-bold uppercase tracking-widest">Expertos Elite</p>
+              <p className="text-white text-sm font-black uppercase tracking-tighter">Equipo de</p>
+              <p className="text-[#FFB800] text-[10px] font-bold uppercase tracking-widest">Roma Center</p>
             </div>
           </div>
 
