@@ -14,6 +14,7 @@ type DisplayItem =
 
 export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedMech, setSelectedMech] = useState<any>(null);
 
   // Extract dynamic data
   const dashboard = (settings?.landing_config as any)?.dashboard || { tips: [], featured_mechanics: [], rotation_speed: 15000 };
@@ -120,21 +121,93 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
           </motion.div>
         </AnimatePresence>
 
-        {/* Floating Team Badge (Persistent) */}
-        <div className="absolute bottom-12 left-12 flex items-center gap-4 bg-black/40 backdrop-blur-xl border border-white/5 p-4 rounded-2xl">
-          <div className="flex -space-x-3">
+        {/* Floating Team Badge (Persistent) - LARGER AND INTERACTIVE */}
+        <div className="absolute bottom-12 left-12 flex items-center gap-8 bg-black/60 backdrop-blur-3xl border border-white/10 p-6 rounded-[32px] shadow-2xl z-[50]">
+          <div className="flex -space-x-5">
              {featuredMechanics.slice(0, 3).map((m: any, i: number) => (
-               <div key={i} className="w-10 h-10 rounded-full border-2 border-[#050505] bg-zinc-800 transition-transform hover:scale-110 overflow-hidden">
+               <motion.button 
+                 key={i} 
+                 whileHover={{ scale: 1.15, zIndex: 10, y: -5 }}
+                 onClick={() => setSelectedMech(m)}
+                 className="w-20 h-20 rounded-full border-[3px] border-[#050505] bg-zinc-800 shadow-xl overflow-hidden cursor-pointer"
+               >
                  <img src={m.photo} className="w-full h-full object-cover" alt={m.name} />
-               </div>
+               </motion.button>
              ))}
           </div>
-          <div className="text-xs">
-            <p className="text-white font-bold">Equipo de Expertos</p>
-            <p className="text-zinc-400">Roma Center</p>
+          <div className="space-y-1">
+            <p className="text-white text-xl font-black uppercase tracking-tighter">Equipo de Expertos</p>
+            <p className="text-[#FFB800] text-sm font-bold uppercase tracking-[0.3em]">Roma Center</p>
           </div>
         </div>
       </div>
+
+      {/* MECHANIC LAMINA (OVERLAY) */}
+      <AnimatePresence>
+        {selectedMech && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-20 bg-black/95 backdrop-blur-2xl"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 50, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 1.1, y: -20, opacity: 0 }}
+              className="relative w-full max-w-6xl aspect-[16/9] bg-[#050505] rounded-[60px] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] flex"
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setSelectedMech(null)}
+                className="absolute top-10 right-10 z-50 p-4 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all border border-white/10"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+
+              {/* Left: Huge Portrait */}
+              <div className="w-1/2 h-full relative">
+                <img src={selectedMech.photo} className="w-full h-full object-cover" alt={selectedMech.name} />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#050505]" />
+                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
+              </div>
+
+              {/* Right: Info */}
+              <div className="w-1/2 h-full flex flex-col justify-center px-20 space-y-10">
+                <div className="space-y-4">
+                  <div className="inline-block bg-[#FFB800] text-black px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-[0_0_30px_rgba(255,184,0,0.3)]">
+                    {selectedMech.specialty || 'ESPECIALISTA ELITE'}
+                  </div>
+                  <h2 className="text-8xl font-black text-white uppercase tracking-tighter leading-[0.85]">
+                    <span className="text-[#FFB800]">{selectedMech.name.split(' ')[0]}</span>
+                    <br />
+                    {selectedMech.name.split(' ').slice(1).join(' ')}
+                  </h2>
+                  <p className="text-[#FFB800] text-2xl font-bold uppercase tracking-[0.4em] pt-2">{selectedMech.role}</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="h-[2px] w-24 bg-[#FFB800]" />
+                  <p className="text-3xl text-zinc-400 font-light italic leading-relaxed max-w-xl">
+                    "{selectedMech.description}"
+                  </p>
+                </div>
+
+                <div className="pt-10 flex gap-4">
+                   <div className="bg-white/5 border border-white/10 px-8 py-4 rounded-3xl">
+                      <p className="text-zinc-500 text-xs font-black uppercase tracking-widest mb-1">Status</p>
+                      <p className="text-white text-xl font-bold">Activo en Planta</p>
+                   </div>
+                   <div className="bg-white/5 border border-white/10 px-8 py-4 rounded-3xl">
+                      <p className="text-zinc-500 text-xs font-black uppercase tracking-widest mb-1">Experiencia</p>
+                      <p className="text-white text-xl font-bold">Certificado Senior</p>
+                   </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* RIGHT SIDE: INFORMATION PANEL */}
       <div className="w-1/2 h-full flex flex-col justify-center px-24 relative">
