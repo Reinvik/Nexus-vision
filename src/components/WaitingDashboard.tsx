@@ -219,10 +219,7 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
   return (
     <div className="fixed inset-0 bg-black overflow-hidden z-[9999] select-none">
       {/* Subtle Controls */}
-      <div className="absolute top-4 right-4 z-[10000] flex gap-4 items-center opacity-50 hover:opacity-100 transition-opacity duration-300">
-        <MusicPlayer />
-        
-        <div className="h-6 w-[1px] bg-white/10 mx-2" />
+      <div className="absolute top-4 right-4 z-[10000] flex gap-2 opacity-50 hover:opacity-100 transition-opacity duration-300">
 
         <button 
           onClick={() => {
@@ -289,6 +286,11 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Persistent Music Player - BOTTOM RIGHT */}
+      <div className="absolute bottom-8 right-8 z-[10000]">
+        <MusicPlayer />
+      </div>
     </div>
   );
 }

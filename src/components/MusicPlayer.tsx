@@ -52,7 +52,7 @@ export function MusicPlayer() {
   }, [currentTrackIndex]);
 
   return (
-    <div className="relative flex items-center gap-3">
+    <div className="relative flex items-center gap-3 pointer-events-auto">
       <audio
         ref={audioRef}
         src={currentTrack.file}
@@ -120,7 +120,7 @@ export function MusicPlayer() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute bottom-full right-0 mb-4 w-64 bg-zinc-900/95 backdrop-blur-2xl border border-white/10 rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100]"
+            className="absolute bottom-full right-0 mb-6 w-72 bg-zinc-900/98 backdrop-blur-3xl border border-white/10 rounded-[32px] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.8)] z-[200]"
           >
             <div className="p-4 border-b border-white/5 bg-white/5">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Playlist Roma Center</p>
