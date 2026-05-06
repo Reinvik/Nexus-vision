@@ -197,11 +197,11 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
             ) : currentItem.type === 'video' ? (
               <div className="w-full h-full absolute inset-0 flex items-center justify-center bg-black">
                  {currentItem.data.video_url.includes('youtube.com') || currentItem.data.video_url.includes('youtu.be') ? (
-                   <YoutubePlayer 
-                     videoId={getVideoId(currentItem.data.video_url)} 
-                     onEnded={() => setCurrentIndex((prev) => (prev + 1) % items.length)}
-                     title={currentItem.data.title}
-                   />
+                    <YoutubePlayer 
+                      videoId={getVideoId(currentItem.data.video_url)} 
+                      onEnded={handleNext}
+                      title={currentItem.data.title}
+                    />
                  ) : (
                    <iframe 
                       src={getVideoEmbedUrl(currentItem.data.video_url)}
