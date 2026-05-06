@@ -6,6 +6,7 @@ import { GarageSettings, Mechanic } from '@/types';
 interface IdleCarouselProps {
   mechanics: Mechanic[];
   settings: GarageSettings | null;
+  onVideoStateChange?: (isActive: boolean) => void;
 }
 
 type DisplayItem = 
@@ -102,7 +103,7 @@ function YoutubePlayer({ videoId, onEnded, title }: { videoId: string, onEnded: 
   return <div id={`youtube-player-${videoId}`} className="w-full h-full absolute inset-0" title={title} />;
 }
 
-export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselProps) {
+export function IdleCarousel({ mechanics: _mechanics, settings, onVideoStateChange }: IdleCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedMech, setSelectedMech] = useState<any>(null);
 
@@ -140,6 +141,10 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
   const handleNext = React.useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % items.length);
   }, [items.length]);
+
+  useEffect(() => {
+    onVideoStateChange?.(currentItem.type === 'video');
+  }, [currentItem.type, onVideoStateChange]);
 
   useEffect(() => {
     // If it's not a video, use the standard timer

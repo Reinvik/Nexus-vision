@@ -9,8 +9,9 @@ const TRACKS = [
   { name: 'Precision Interval', file: '/Precision_Interval.mp3' },
 ];
 
-export function MusicPlayer() {
+export function MusicPlayer({ isMutedBySystem = false }: { isMutedBySystem?: boolean }) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [wasPlayingBeforeMute, setWasPlayingBeforeMute] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [volume, setVolume] = useState(0.5);
@@ -46,7 +47,25 @@ export function MusicPlayer() {
   };
 
   useEffect(() => {
-    if (isPlaying && audioRef.current) {
+    if (audioRef.current) {
+      if (isMutedBySystem) {
+        if (isPlaying) {
+          setWasPlayingBeforeMute(true);
+          audioRef.current.pause();
+          setIsPlaying(false);
+        }
+      } else {
+        if (wasPlayingBeforeMute) {
+          audioRef.current.play().catch(e => console.error("Resume failed", e));
+          setIsPlaying(true);
+          setWasPlayingBeforeMute(false);
+        }
+      }
+    }
+  }, [isMutedBySystem]);
+
+  useEffect(() => {
+    if (isPlaying && audioRef.current && !isMutedBySystem) {
       audioRef.current.play().catch(e => console.error("Auto-play failed", e));
     }
   }, [currentTrackIndex]);

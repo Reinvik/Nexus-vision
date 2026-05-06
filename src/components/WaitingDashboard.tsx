@@ -216,11 +216,13 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
     );
   }
 
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
   return (
     <div className="fixed inset-0 bg-black overflow-hidden z-[9999] select-none">
-      {/* Subtle Controls */}
+      {/* Subtle Controls ... */}
       <div className="absolute top-4 right-4 z-[10000] flex gap-2 opacity-50 hover:opacity-100 transition-opacity duration-300">
-
+        {/* ... existing buttons ... */}
         <button 
           onClick={() => {
             setMode('active');
@@ -266,7 +268,11 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
             transition={{ duration: 1 }}
             className="w-full h-full"
           >
-            <IdleCarousel mechanics={mechanics} settings={settings} />
+            <IdleCarousel 
+              mechanics={mechanics} 
+              settings={settings} 
+              onVideoStateChange={setIsVideoPlaying}
+            />
           </motion.div>
         ) : (
           <motion.div
@@ -289,7 +295,7 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
 
       {/* Persistent Music Player - BOTTOM RIGHT */}
       <div className="absolute bottom-8 right-8 z-[10000]">
-        <MusicPlayer />
+        <MusicPlayer isMutedBySystem={isVideoPlaying} />
       </div>
     </div>
   );
