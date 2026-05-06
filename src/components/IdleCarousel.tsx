@@ -107,7 +107,7 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
   const [selectedMech, setSelectedMech] = useState<any>(null);
 
   // Extract dynamic data and memoize items to prevent unnecessary re-renders
-  const items = React.useMemo(() => {
+  const { items, featuredMechanics } = React.useMemo(() => {
     const dashboard = (settings?.landing_config as any)?.dashboard || { tips: [], featured_mechanics: [], videos: [], rotation_speed: 15000 };
     const dynamicTips = dashboard.tips || [];
     const featuredMechanics = dashboard.featured_mechanics || [];
@@ -122,7 +122,7 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
       if (featuredMechanics[i]) displayItems.push({ type: 'mechanic', data: featuredMechanics[i] });
     }
 
-    return displayItems.length > 0 ? displayItems : [
+    const finalItems = displayItems.length > 0 ? displayItems : [
       { type: 'tip', data: { 
         title: 'Bienvenido a Roma Center', 
         subtitle: 'Excelencia Automotriz', 
@@ -130,6 +130,8 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
         image: '/assets/tips/oil.png' 
       }}
     ] as DisplayItem[];
+
+    return { items: finalItems, featuredMechanics };
   }, [settings]);
 
   const rotationSpeed = (settings?.landing_config as any)?.dashboard?.rotation_speed || 15000;
