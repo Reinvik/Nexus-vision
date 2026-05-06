@@ -120,11 +120,11 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
                     allow="autoplay; encrypted-media"
                     title={currentItem.data.title}
                  />
-                 {/* Invisible overlay to prevent interaction */}
-                 <div className="absolute inset-0 z-10" />
+                 {/* Invisible overlay to prevent interaction - set to none for IG manual play */}
+                 <div className="absolute inset-0 z-10 pointer-events-none" />
                  
-                 {/* Gradients */}
-                 <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-[#050505] z-20" />
+                 {/* Gradients - also set to none to allow clicks */}
+                 <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-[#050505] z-20 pointer-events-none" />
               </div>
             ) : (
               <div className="relative w-full h-full flex items-center justify-center">
