@@ -106,58 +106,57 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedMech, setSelectedMech] = useState<any>(null);
 
-  // Extract dynamic data
-  const dashboard = (settings?.landing_config as any)?.dashboard || { tips: [], featured_mechanics: [], videos: [], rotation_speed: 15000 };
-  const dynamicTips = dashboard.tips || [];
-  const featuredMechanics = dashboard.featured_mechanics || [];
-  const dynamicVideos = dashboard.videos || [];
-  const rotationSpeed = dashboard.rotation_speed || 15000;
+  // Extract dynamic data and memoize items to prevent unnecessary re-renders
+  const items = React.useMemo(() => {
+    const dashboard = (settings?.landing_config as any)?.dashboard || { tips: [], featured_mechanics: [], videos: [], rotation_speed: 15000 };
+    const dynamicTips = dashboard.tips || [];
+    const featuredMechanics = dashboard.featured_mechanics || [];
+    const dynamicVideos = dashboard.videos || [];
+    
+    const displayItems: DisplayItem[] = [];
+    const maxLen = Math.max(dynamicTips.length, featuredMechanics.length, dynamicVideos.length);
+    
+    for (let i = 0; i < maxLen; i++) {
+      if (dynamicTips[i]) displayItems.push({ type: 'tip', data: dynamicTips[i] });
+      if (dynamicVideos[i]) displayItems.push({ type: 'video', data: dynamicVideos[i] });
+      if (featuredMechanics[i]) displayItems.push({ type: 'mechanic', data: featuredMechanics[i] });
+    }
 
-  // Interleave tips, videos and mechanics
-  const displayItems: DisplayItem[] = [];
-  const maxLen = Math.max(dynamicTips.length, featuredMechanics.length, dynamicVideos.length);
-  
-  for (let i = 0; i < maxLen; i++) {
-    if (dynamicTips[i]) displayItems.push({ type: 'tip', data: dynamicTips[i] });
-    if (dynamicVideos[i]) displayItems.push({ type: 'video', data: dynamicVideos[i] });
-    if (featuredMechanics[i]) displayItems.push({ type: 'mechanic', data: featuredMechanics[i] });
-  }
+    return displayItems.length > 0 ? displayItems : [
+      { type: 'tip', data: { 
+        title: 'Bienvenido a Roma Center', 
+        subtitle: 'Excelencia Automotriz', 
+        description: 'Estamos trabajando para brindarte el mejor servicio.',
+        image: '/assets/tips/oil.png' 
+      }}
+    ] as DisplayItem[];
+  }, [settings]);
 
-  // Fallback if empty
-  const items = displayItems.length > 0 ? displayItems : [
-    { type: 'tip', data: { 
-      title: 'Bienvenido a Roma Center', 
-      subtitle: 'Excelencia Automotriz', 
-      description: 'Estamos trabajando para brindarte el mejor servicio.',
-      image: '/assets/tips/oil.png' 
-    }}
-  ] as DisplayItem[];
-
+  const rotationSpeed = (settings?.landing_config as any)?.dashboard?.rotation_speed || 15000;
   const currentItem = items[currentIndex];
+
+  const handleNext = React.useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % items.length);
+  }, [items.length]);
 
   useEffect(() => {
     // If it's not a video, use the standard timer
     if (currentItem.type !== 'video') {
-      const timer = setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % items.length);
-      }, rotationSpeed);
+      const timer = setTimeout(handleNext, rotationSpeed);
       return () => clearTimeout(timer);
     }
     
     // For Instagram videos (we can't detect end), we set a longer safety timer (e.g. 60s)
     if (currentItem.type === 'video' && currentItem.data.video_url.includes('instagram.com')) {
-      const timer = setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % items.length);
-      }, 60000); // 60 seconds for IG
+      const timer = setTimeout(handleNext, 60000); // 60 seconds for IG
       return () => clearTimeout(timer);
     }
 
-    // For YouTube, we rely on the API (no timer here, the onEnded callback in YoutubePlayer will handle it)
-  }, [currentIndex, currentItem.type, items.length, rotationSpeed]);
+    // For YouTube, we rely on the API
+  }, [currentIndex, currentItem.type, handleNext, rotationSpeed]);
 
   // YouTube API Integration
   useEffect(() => {
-    // Load YouTube API if needed
     if (!(window as any).YT) {
       const tag = document.createElement('script');
       tag.src = "https://www.youtube.com/iframe_api";
