@@ -125,6 +125,8 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
     }}
   ] as DisplayItem[];
 
+  const currentItem = items[currentIndex];
+
   useEffect(() => {
     // If it's not a video, use the standard timer
     if (currentItem.type !== 'video') {
@@ -155,8 +157,6 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
       firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
     }
   }, []);
-
-  const currentItem = items[currentIndex];
 
   return (
     <div className="w-full h-full flex bg-[#050505] overflow-hidden">
