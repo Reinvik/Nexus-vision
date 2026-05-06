@@ -43,6 +43,57 @@ function getVideoEmbedUrl(url: string) {
   return url;
 }
 
+function getVideoId(url: string) {
+  if (!url) return '';
+  if (url.includes('v=')) return url.split('v=')[1].split('&')[0];
+  if (url.includes('youtu.be/')) return url.split('youtu.be/')[1].split('?')[0];
+  if (url.includes('embed/')) return url.split('embed/')[1].split('?')[0];
+  if (url.includes('shorts/')) return url.split('shorts/')[1].split('?')[0];
+  return '';
+}
+
+function YoutubePlayer({ videoId, onEnded, title }: { videoId: string, onEnded: () => void, title: string }) {
+  useEffect(() => {
+    let player: any;
+    
+    const initPlayer = () => {
+      player = new (window as any).YT.Player(`youtube-player-${videoId}`, {
+        height: '100%',
+        width: '100%',
+        videoId: videoId,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          rel: 0,
+          modestbranding: 1,
+          iv_load_policy: 3,
+          showinfo: 0
+        },
+        events: {
+          onStateChange: (event: any) => {
+            if (event.data === (window as any).YT.PlayerState.ENDED) {
+              onEnded();
+            }
+          }
+        }
+      });
+    };
+
+    if ((window as any).YT && (window as any).YT.Player) {
+      initPlayer();
+    } else {
+      (window as any).onYouTubeIframeAPIReady = initPlayer;
+    }
+
+    return () => {
+      if (player && player.destroy) player.destroy();
+    };
+  }, [videoId, onEnded]);
+
+  return <div id={`youtube-player-${videoId}`} className="w-full h-full absolute inset-0" title={title} />;
+}
+
 export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedMech, setSelectedMech] = useState<any>(null);
@@ -75,12 +126,35 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
   ] as DisplayItem[];
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % items.length);
-    }, rotationSpeed);
+    // If it's not a video, use the standard timer
+    if (currentItem.type !== 'video') {
+      const timer = setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % items.length);
+      }, rotationSpeed);
+      return () => clearTimeout(timer);
+    }
+    
+    // For Instagram videos (we can't detect end), we set a longer safety timer (e.g. 60s)
+    if (currentItem.type === 'video' && currentItem.data.video_url.includes('instagram.com')) {
+      const timer = setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % items.length);
+      }, 60000); // 60 seconds for IG
+      return () => clearTimeout(timer);
+    }
 
-    return () => clearInterval(timer);
-  }, [items.length, rotationSpeed]);
+    // For YouTube, we rely on the API (no timer here, the onEnded callback in YoutubePlayer will handle it)
+  }, [currentIndex, currentItem.type, items.length, rotationSpeed]);
+
+  // YouTube API Integration
+  useEffect(() => {
+    // Load YouTube API if needed
+    if (!(window as any).YT) {
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+  }, []);
 
   const currentItem = items[currentIndex];
 
@@ -115,12 +189,20 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
               />
             ) : currentItem.type === 'video' ? (
               <div className="w-full h-full absolute inset-0 flex items-center justify-center bg-black">
-                 <iframe 
-                    src={getVideoEmbedUrl(currentItem.data.video_url)}
-                    className="w-full h-full absolute inset-0 border-0"
-                    allow="autoplay; encrypted-media"
-                    title={currentItem.data.title}
-                 />
+                 {currentItem.data.video_url.includes('youtube.com') || currentItem.data.video_url.includes('youtu.be') ? (
+                   <YoutubePlayer 
+                     videoId={getVideoId(currentItem.data.video_url)} 
+                     onEnded={() => setCurrentIndex((prev) => (prev + 1) % items.length)}
+                     title={currentItem.data.title}
+                   />
+                 ) : (
+                   <iframe 
+                      src={getVideoEmbedUrl(currentItem.data.video_url)}
+                      className="w-full h-full absolute inset-0 border-0"
+                      allow="autoplay; encrypted-media"
+                      title={currentItem.data.title}
+                   />
+                 )}
                  {/* Invisible overlay to prevent interaction - set to none for IG manual play */}
                  <div className="absolute inset-0 z-10 pointer-events-none" />
                  
