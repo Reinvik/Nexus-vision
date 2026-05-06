@@ -56,6 +56,11 @@ function YoutubePlayer({ videoId, onEnded, title }: { videoId: string, onEnded: 
   useEffect(() => {
     let player: any;
     
+    // Safety timeout: if the video doesn't end in 3 minutes, force next
+    const safetyTimer = setTimeout(() => {
+      onEnded();
+    }, 180000); 
+
     const initPlayer = () => {
       player = new (window as any).YT.Player(`youtube-player-${videoId}`, {
         height: '100%',
@@ -63,16 +68,18 @@ function YoutubePlayer({ videoId, onEnded, title }: { videoId: string, onEnded: 
         videoId: videoId,
         playerVars: {
           autoplay: 1,
-          mute: 1,
+          mute: 0, // Enable audio
           controls: 0,
           rel: 0,
           modestbranding: 1,
           iv_load_policy: 3,
-          showinfo: 0
+          showinfo: 0,
+          loop: 0 // Disable internal loop to catch ENDED event
         },
         events: {
           onStateChange: (event: any) => {
             if (event.data === (window as any).YT.PlayerState.ENDED) {
+              clearTimeout(safetyTimer);
               onEnded();
             }
           }
@@ -87,6 +94,7 @@ function YoutubePlayer({ videoId, onEnded, title }: { videoId: string, onEnded: 
     }
 
     return () => {
+      clearTimeout(safetyTimer);
       if (player && player.destroy) player.destroy();
     };
   }, [videoId, onEnded]);
