@@ -13,21 +13,31 @@ type DisplayItem =
   | { type: 'mechanic'; data: { name: string; role: string; specialty: string; photo: string; description: string } }
   | { type: 'video'; data: { title: string; subtitle: string; description: string; video_url: string } };
 
-function getYouTubeEmbedUrl(url: string) {
+function getVideoEmbedUrl(url: string) {
   if (!url) return '';
-  let videoId = '';
-  if (url.includes('v=')) {
-    videoId = url.split('v=')[1].split('&')[0];
-  } else if (url.includes('youtu.be/')) {
-    videoId = url.split('youtu.be/')[1].split('?')[0];
-  } else if (url.includes('embed/')) {
-    videoId = url.split('embed/')[1].split('?')[0];
+  
+  // YouTube Detection
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    let videoId = '';
+    if (url.includes('v=')) videoId = url.split('v=')[1].split('&')[0];
+    else if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
+    else if (url.includes('embed/')) videoId = url.split('embed/')[1].split('?')[0];
+    
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&rel=0&modestbranding=1`;
+    }
+  }
+
+  // Instagram Detection
+  if (url.includes('instagram.com')) {
+    const parts = url.split('/');
+    const pIndex = parts.findIndex(p => p === 'p' || p === 'reels' || p === 'reel');
+    if (pIndex !== -1 && parts[pIndex + 1]) {
+      const code = parts[pIndex + 1];
+      return `https://www.instagram.com/reels/${code}/embed/`;
+    }
   }
   
-  if (videoId) {
-    // Add autoplay, mute, and loop for a seamless dashboard experience
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&rel=0&modestbranding=1`;
-  }
   return url;
 }
 
@@ -102,17 +112,17 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
                 className="w-full h-full object-cover absolute inset-0"
               />
             ) : currentItem.type === 'video' ? (
-              <div className="w-full h-full absolute inset-0">
+              <div className="w-full h-full absolute inset-0 flex items-center justify-center bg-black">
                  <iframe 
-                    src={getYouTubeEmbedUrl(currentItem.data.video_url)}
-                    className="w-full h-full absolute inset-0 border-0"
+                    src={getVideoEmbedUrl(currentItem.data.video_url)}
+                    className={`w-full h-full absolute inset-0 border-0 ${currentItem.data.video_url.includes('instagram') ? 'scale-125' : ''}`}
                     allow="autoplay; encrypted-media"
                     title={currentItem.data.title}
                  />
-                 {/* Invisible overlay to prevent interaction with the iframe */}
+                 {/* Invisible overlay to prevent interaction */}
                  <div className="absolute inset-0 z-10" />
                  
-                 {/* Darkening Gradients */}
+                 {/* Gradients */}
                  <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-[#050505] z-20" />
               </div>
             ) : (
