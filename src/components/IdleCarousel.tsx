@@ -10,16 +10,36 @@ interface IdleCarouselProps {
 
 type DisplayItem = 
   | { type: 'tip'; data: { title: string; subtitle: string; description: string; image: string } }
-  | { type: 'mechanic'; data: { name: string; role: string; specialty: string; photo: string; description: string } };
+  | { type: 'mechanic'; data: { name: string; role: string; specialty: string; photo: string; description: string } }
+  | { type: 'video'; data: { title: string; subtitle: string; description: string; video_url: string } };
+
+function getYouTubeEmbedUrl(url: string) {
+  if (!url) return '';
+  let videoId = '';
+  if (url.includes('v=')) {
+    videoId = url.split('v=')[1].split('&')[0];
+  } else if (url.includes('youtu.be/')) {
+    videoId = url.split('youtu.be/')[1].split('?')[0];
+  } else if (url.includes('embed/')) {
+    videoId = url.split('embed/')[1].split('?')[0];
+  }
+  
+  if (videoId) {
+    // Add autoplay, mute, and loop for a seamless dashboard experience
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&rel=0&modestbranding=1`;
+  }
+  return url;
+}
 
 export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedMech, setSelectedMech] = useState<any>(null);
 
   // Extract dynamic data
-  const dashboard = (settings?.landing_config as any)?.dashboard || { tips: [], featured_mechanics: [], rotation_speed: 15000 };
+  const dashboard = (settings?.landing_config as any)?.dashboard || { tips: [], featured_mechanics: [], videos: [], rotation_speed: 15000 };
   const dynamicTips = dashboard.tips || [];
   const featuredMechanics = dashboard.featured_mechanics || [];
+  const dynamicVideos = dashboard.videos || [];
   const rotationSpeed = dashboard.rotation_speed || 15000;
 
   // Interleave tips and mechanics
@@ -28,6 +48,7 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
   
   for (let i = 0; i < maxLen; i++) {
     if (dynamicTips[i]) displayItems.push({ type: 'tip', data: dynamicTips[i] });
+    if (dynamicVideos[i]) displayItems.push({ type: 'video', data: dynamicVideos[i] });
     if (featuredMechanics[i]) displayItems.push({ type: 'mechanic', data: featuredMechanics[i] });
   }
 
@@ -80,6 +101,20 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
                 }}
                 className="w-full h-full object-cover absolute inset-0"
               />
+            ) : currentItem.type === 'video' ? (
+              <div className="w-full h-full absolute inset-0">
+                 <iframe 
+                    src={getYouTubeEmbedUrl(currentItem.data.video_url)}
+                    className="w-full h-full absolute inset-0 border-0"
+                    allow="autoplay; encrypted-media"
+                    title={currentItem.data.title}
+                 />
+                 {/* Invisible overlay to prevent interaction with the iframe */}
+                 <div className="absolute inset-0 z-10" />
+                 
+                 {/* Darkening Gradients */}
+                 <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-[#050505] z-20" />
+              </div>
             ) : (
               <div className="relative w-full h-full flex items-center justify-center">
                  <motion.img 
@@ -240,10 +275,17 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
               <div className="space-y-2">
                 <span className="text-[#FFB800] font-bold uppercase tracking-widest text-sm flex items-center gap-3">
                   <span className="w-12 h-[2px] bg-[#FFB800]" />
-                  {currentItem.type === 'tip' ? currentItem.data.subtitle : currentItem.data.role}
+                  {currentItem.type === 'tip' ? currentItem.data.subtitle : currentItem.type === 'video' ? currentItem.data.subtitle : currentItem.data.role}
                 </span>
                 <h2 className="text-8xl font-black text-white uppercase tracking-tighter leading-[0.9]">
                   {currentItem.type === 'tip' ? (
+                    currentItem.data.title.split(' ').map((word, i) => (
+                      <React.Fragment key={i}>
+                        {i === 0 ? <span className="text-[#FFB800]">{word}</span> : word}{' '}
+                        {i === 1 && <br />}
+                      </React.Fragment>
+                    ))
+                  ) : currentItem.type === 'video' ? (
                     currentItem.data.title.split(' ').map((word, i) => (
                       <React.Fragment key={i}>
                         {i === 0 ? <span className="text-[#FFB800]">{word}</span> : word}{' '}
