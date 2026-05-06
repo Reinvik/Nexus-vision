@@ -34,7 +34,8 @@ function getVideoEmbedUrl(url: string) {
     const pIndex = parts.findIndex(p => p === 'p' || p === 'reels' || p === 'reel');
     if (pIndex !== -1 && parts[pIndex + 1]) {
       const code = parts[pIndex + 1];
-      return `https://www.instagram.com/reels/${code}/embed/`;
+      // Use /p/ format for better compatibility even for reels
+      return `https://www.instagram.com/p/${code}/embed`;
     }
   }
   
@@ -115,7 +116,7 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
               <div className="w-full h-full absolute inset-0 flex items-center justify-center bg-black">
                  <iframe 
                     src={getVideoEmbedUrl(currentItem.data.video_url)}
-                    className={`w-full h-full absolute inset-0 border-0 ${currentItem.data.video_url.includes('instagram') ? 'scale-125' : ''}`}
+                    className="w-full h-full absolute inset-0 border-0"
                     allow="autoplay; encrypted-media"
                     title={currentItem.data.title}
                  />
