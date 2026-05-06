@@ -161,7 +161,7 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
             )}
             
             {/* Overlays: Smoother transition to the right panel */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-[#050505] translate-x-[1px]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-[#050505] translate-x-[1px] pointer-events-none" />
             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#050505] to-transparent pointer-events-none" />
             <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#050505] to-transparent pointer-events-none" />
           </motion.div>
