@@ -113,9 +113,9 @@ export function IdleCarousel({ mechanics: _mechanics, settings }: IdleCarouselPr
   const dynamicVideos = dashboard.videos || [];
   const rotationSpeed = dashboard.rotation_speed || 15000;
 
-  // Interleave tips and mechanics
+  // Interleave tips, videos and mechanics
   const displayItems: DisplayItem[] = [];
-  const maxLen = Math.max(dynamicTips.length, featuredMechanics.length);
+  const maxLen = Math.max(dynamicTips.length, featuredMechanics.length, dynamicVideos.length);
   
   for (let i = 0; i < maxLen; i++) {
     if (dynamicTips[i]) displayItems.push({ type: 'tip', data: dynamicTips[i] });
