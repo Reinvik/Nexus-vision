@@ -19,6 +19,7 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
   const [mode, setMode] = useState<'idle' | 'active'>('idle');
   const [lastUpdatedTicket, setLastUpdatedTicket] = useState<Ticket | null>(null);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const { tickets, refreshData } = useGarageStore(companyId);
   const audioContextRef = useRef<boolean>(false);
 
@@ -215,8 +216,6 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
       </div>
     );
   }
-
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden z-[9999] select-none">
