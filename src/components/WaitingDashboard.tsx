@@ -5,7 +5,7 @@ import { Ticket, Mechanic } from '@/types';
 import { IdleCarousel } from './IdleCarousel';
 import { ActiveKanbanView } from './ActiveKanbanView';
 import { useGarageStore } from '@/hooks/useGarageStore';
-import { X, Maximize, Volume2, Play, Sliders, Bell, VolumeX, Music, Video, Mic } from 'lucide-react';
+import { X, Maximize, Volume2, Play, Sliders, Bell, VolumeX, Music, Video, Mic, Clock } from 'lucide-react';
 import { SpartanLogo } from './SpartanLogo';
 import { MusicPlayer } from './MusicPlayer';
 
@@ -43,6 +43,12 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
   const [isAnnouncing, setIsAnnouncing] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
 
+  // Tiempo de visualización activa del tablero (Kanban) configurable con persistencia en localStorage, predeterminado a 30s
+  const [activeDuration, setActiveDuration] = useState(() => {
+    const saved = localStorage.getItem('nexus_vision_active_duration');
+    return saved !== null ? parseInt(saved, 10) : 30;
+  });
+
   // Sincronizar volúmenes con localStorage
   useEffect(() => {
     localStorage.setItem('nexus_vision_volume_music', musicVolume.toString());
@@ -56,6 +62,9 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
   useEffect(() => {
     localStorage.setItem('nexus_vision_volume_notification', notificationVolume.toString());
   }, [notificationVolume]);
+  useEffect(() => {
+    localStorage.setItem('nexus_vision_active_duration', activeDuration.toString());
+  }, [activeDuration]);
 
   // Síntesis de sonido de campana digital (Web Audio API)
   const playChimeSound = useCallback((volumeValue: number) => {
@@ -181,16 +190,16 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
     playChimeSound(notificationVolume);
   };
 
-  // Return to idle after 30 seconds of being active
+  // Return to idle after configurable seconds of being active
   useEffect(() => {
     if (mode === 'active') {
       const timer = setTimeout(() => {
         setMode('idle');
         setLastUpdatedTicket(null);
-      }, 30000);
+      }, activeDuration * 1000);
       return () => clearTimeout(timer);
     }
-  }, [mode]);
+  }, [mode, activeDuration]);
 
   // Failsafe: Refresh data every 60 seconds in case Realtime fails
   useEffect(() => {
@@ -433,8 +442,8 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
                 <div className="flex items-center gap-3">
                   <Sliders className="w-6 h-6 text-[#FFB800]" />
                   <div>
-                    <h3 className="text-xl font-black uppercase tracking-tight">Control de Audio</h3>
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Ajustes de Sonido Ecosistema</p>
+                    <h3 className="text-xl font-black uppercase tracking-tight">Configuración</h3>
+                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Control de Audio y Pantalla</p>
                   </div>
                 </div>
                 <button
@@ -579,6 +588,35 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
                     <Bell className="w-4 h-4" />
                     Probar Campana de Tablero
                   </button>
+                </div>
+
+                {/* 5. Tiempo de Visualización del Tablero */}
+                <div className="bg-white/5 border border-white/5 p-5 rounded-2xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-[#FFB800]" />
+                      <span className="font-bold text-sm uppercase tracking-wider">Tiempo de Tablero</span>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-[#FFB800] bg-[#FFB800]/10 px-2.5 py-0.5 rounded-full">
+                      {activeDuration} segundos
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs font-mono text-zinc-500">10s</span>
+                    <input
+                      type="range"
+                      min="10"
+                      max="120"
+                      step="5"
+                      value={activeDuration}
+                      onChange={(e) => setActiveDuration(parseInt(e.target.value, 10))}
+                      className="flex-1 h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-[#FFB800]"
+                    />
+                    <span className="text-xs font-mono text-zinc-500">120s</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-500 leading-relaxed">
+                    Define cuántos segundos permanece activo el tablero de estados antes de volver al carrusel de inactividad de manera automática.
+                  </p>
                 </div>
               </div>
 
