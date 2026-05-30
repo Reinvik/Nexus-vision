@@ -118,11 +118,13 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
       console.log('[Audio] Anunciando ticket:', ticket.patente);
       const message = new SpeechSynthesisUtterance();
       
-      // Spell out the plate letter by letter for clarity
-      const cleanPlate = ticket.patente?.toUpperCase().split('').join(' ') || 'desconocida';
+      const clientName = ticket.owner_name ? ticket.owner_name.trim() : 'Estimado Cliente';
+      const vehicleBrand = ticket.brand && ticket.brand.trim() !== '' && ticket.brand !== 'Sin asignar'
+        ? `marca ${ticket.brand.trim()}`
+        : '';
       
-      // Phrasing as requested: License plate + "está listo para entrega"
-      message.text = `Atención. El vehículo con patente ${cleanPlate}, está listo para entrega. Repito, patente ${cleanPlate}, listo para entrega.`;
+      // Frase solicitada por el usuario
+      message.text = `Atención. Cliente ${clientName}, su vehículo ${vehicleBrand} está listo para entrega.`;
       message.lang = 'es-CL';
       message.pitch = voiceSettings.pitch;
       message.rate = voiceSettings.rate;
@@ -169,7 +171,8 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
       id: 'test',
       patente: 'ABCD 12',
       status: 'Listo para entrega',
-      owner_name: 'Usuario de Prueba'
+      owner_name: 'Juan Carlos',
+      brand: 'Chevrolet'
     } as Ticket;
     announceTicket(testTicket);
   };
