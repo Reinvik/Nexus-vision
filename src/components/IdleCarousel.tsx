@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SpartanLogo } from './SpartanLogo';
 import { GarageSettings, Mechanic } from '@/types';
@@ -7,6 +7,7 @@ interface IdleCarouselProps {
   mechanics: Mechanic[];
   settings: GarageSettings | null;
   onVideoStateChange?: (isActive: boolean) => void;
+  videoVolume?: number; // 0 to 1
 }
 
 type DisplayItem = 
@@ -53,7 +54,9 @@ function getVideoId(url: string) {
   return '';
 }
 
-function YoutubePlayer({ videoId, onEnded, title }: { videoId: string, onEnded: () => void, title: string }) {
+function YoutubePlayer({ videoId, onEnded, title, volume = 0.5 }: { videoId: string, onEnded: () => void, title: string, volume?: number }) {
+  const playerRef = useRef<any>(null);
+
   useEffect(() => {
     let player: any;
     
@@ -78,6 +81,10 @@ function YoutubePlayer({ videoId, onEnded, title }: { videoId: string, onEnded: 
           loop: 0 // Disable internal loop to catch ENDED event
         },
         events: {
+          onReady: (event: any) => {
+            playerRef.current = player;
+            event.target.setVolume(volume * 100);
+          },
           onStateChange: (event: any) => {
             if (event.data === (window as any).YT.PlayerState.ENDED) {
               clearTimeout(safetyTimer);
@@ -97,13 +104,21 @@ function YoutubePlayer({ videoId, onEnded, title }: { videoId: string, onEnded: 
     return () => {
       clearTimeout(safetyTimer);
       if (player && player.destroy) player.destroy();
+      playerRef.current = null;
     };
   }, [videoId, onEnded]);
+
+  // Sincronizar volumen dinámicamente cuando el prop cambie
+  useEffect(() => {
+    if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
+      playerRef.current.setVolume(volume * 100);
+    }
+  }, [volume]);
 
   return <div id={`youtube-player-${videoId}`} className="w-full h-full absolute inset-0" title={title} />;
 }
 
-export function IdleCarousel({ mechanics: _mechanics, settings, onVideoStateChange }: IdleCarouselProps) {
+export function IdleCarousel({ mechanics: _mechanics, settings, onVideoStateChange, videoVolume = 0.5 }: IdleCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedMech, setSelectedMech] = useState<any>(null);
 
@@ -208,6 +223,7 @@ export function IdleCarousel({ mechanics: _mechanics, settings, onVideoStateChan
                       videoId={getVideoId(currentItem.data.video_url)} 
                       onEnded={handleNext}
                       title={currentItem.data.title}
+                      volume={videoVolume}
                     />
                  ) : (
                    <iframe 

@@ -9,21 +9,45 @@ const TRACKS = [
   { name: 'Precision Interval', file: '/Precision_Interval.mp3' },
 ];
 
-export function MusicPlayer({ isMutedBySystem = false }: { isMutedBySystem?: boolean }) {
+interface MusicPlayerProps {
+  isMutedBySystem?: boolean;
+  syncedVolume?: number;
+  onVolumeChange?: (volume: number) => void;
+}
+
+export function MusicPlayer({ 
+  isMutedBySystem = false,
+  syncedVolume,
+  onVolumeChange
+}: MusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [wasPlayingBeforeMute, setWasPlayingBeforeMute] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [showPlaylist, setShowPlaylist] = useState(false);
-  const [volume, setVolume] = useState(0.5);
+  const [volume, setVolume] = useState(syncedVolume !== undefined ? syncedVolume : 0.5);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentTrack = TRACKS[currentTrackIndex];
+
+  // Sincronizar con el volumen externo cuando cambie
+  useEffect(() => {
+    if (syncedVolume !== undefined) {
+      setVolume(syncedVolume);
+    }
+  }, [syncedVolume]);
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
+
+  const handleVolumeChange = (newVol: number) => {
+    setVolume(newVol);
+    if (onVolumeChange) {
+      onVolumeChange(newVol);
+    }
+  };
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -116,7 +140,7 @@ export function MusicPlayer({ isMutedBySystem = false }: { isMutedBySystem?: boo
             max="1"
             step="0.01"
             value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
             className="w-16 h-1 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-[#FFB800]"
           />
         </div>
