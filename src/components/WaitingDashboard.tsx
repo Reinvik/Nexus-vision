@@ -8,6 +8,7 @@ import { useGarageStore } from '@/hooks/useGarageStore';
 import { X, Maximize, Volume2, Play, Sliders, Bell, VolumeX, Music, Video, Mic, Clock } from 'lucide-react';
 import { SpartanLogo } from './SpartanLogo';
 import { MusicPlayer } from './MusicPlayer';
+import { ScreenScaleControl } from './ScreenScaleControl';
 
 interface WaitingDashboardProps {
   companyId: string;
@@ -354,6 +355,7 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
           <Volume2 className="w-3 h-3 mr-1.5" />
           <span className="text-[10px] font-bold uppercase">Probar Audio</span>
         </button>
+        <ScreenScaleControl variant="compact" />
         <button 
           onClick={toggleFullScreen}
           className="p-2 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-400 rounded-xl border border-zinc-800 backdrop-blur-md transition-colors"
@@ -617,6 +619,11 @@ export function WaitingDashboard({ companyId, mechanics, onExit }: WaitingDashbo
                   <p className="text-[10px] text-zinc-500 leading-relaxed">
                     Define cuántos segundos permanece activo el tablero de estados antes de volver al carrusel de inactividad de manera automática.
                   </p>
+                </div>
+
+                {/* 6. Escala y Resolución de Pantalla (TV / Monitores) */}
+                <div className="bg-white/5 border border-white/5 p-5 rounded-2xl space-y-4">
+                  <ScreenScaleControl variant="inline" className="bg-transparent border-0 p-0 shadow-none" />
                 </div>
               </div>
 
